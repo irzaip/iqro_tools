@@ -7,21 +7,22 @@ let cvv;
 let allbox = [[0,0,0,0]];
 let inputer;
 let json_file = [];
-let file_pref = './iqro1/';
+let save_pref = './iqro1_data';
+let bookfile_pref = './iqro1_book/';
 let counter = '0000';
 let namafile;
 let fileid;
 let ccc;
 let ctxx;
+let scount = 0;
+let div_status = document.getElementById('status');
 
 function preload() {
     namafile = document.getElementById('namafile').value;
     my_img = loadImage(namafile); // Load the image
 }
 function setup() {
-
     cvv = createCanvas(my_img.width / 2 ,my_img.height / 2);
-
 }
 
 function draw() {
@@ -75,19 +76,30 @@ function save_part(box,fn) {
     console.log("pasted!");
 }
 
-  function keyTyped() {
-      if (key === 'm') {
-          buildjson();
-      } else if (key === 'z') {
-          allbox.pop();
-      }
-  }
+function keyTyped() {
+    if (key === 's') {
+        saveJson();
+    } else if (key === 'z') {
+        allbox.pop();
+    } else if (key === 'v') {
+        savePic(scount);
+    } else if (key === 'd') {
+        buildjson();
+        status("JSON builded!");
+    }
+}
 
-async function buildjson() {
+function status(stts) {
+  div_status.innerHTML = 'Status :' + stts;
+}
+
+function buildjson() {
     let temp;
     counter = 0;
     allbox.shift();
-    allbox.forEach(m => {
+    console.log("Panjang:", allbox.length)
+    for (let i = 0; i < allbox.length; i++ ){
+      let m = allbox[0];
       let sfn = fileid + "_" + zeroPad(counter, 4) + ".jpg"; 
       temp = {
           'x': m[0],
@@ -100,17 +112,37 @@ async function buildjson() {
       counter++;
       json_file.push(temp);
       console.log('nilai m:' + m);
-      save_part(m,sfn);
-    })
-
+      //save_part(m,sfn);
+      scounter = 0;
+    }
     fileJSON = JSON.stringify(json_file);
-    download(fileJSON, fileid + '_json.txt', 'text/plain');
+}
 
+function saveJson() {
+    download(fileJSON, fileid + '_json.txt', 'text/plain');
+    console.log("file json sudah di save");
+    status("file JSON sudah di save");
+}
+
+
+function savePic() {
+    try {
+    let m = json_file[scount];
+    console.log("record:"+ scount);
+    console.log(m); 
+    scount++;
+    if(m){ console.log('saved')};
+        status("File Saved!");
+    } catch(e) {
+        console.log(e);
+        console.log("Sudah habis");
+        status("Error loh");
+    }    
 }
 
 function download(content, fileName, contentType) {
-    var a = document.createElement("a");
-    var file = new Blob([content], {type: contentType});
+    let a = document.createElement("a");
+    let file = new Blob([content], {type: contentType});
     a.href = URL.createObjectURL(file);
     a.download = fileName;
     a.click();
@@ -127,7 +159,7 @@ function openfile() {
  
     inputer.onchange = e => { 
     let file = e.target.files[0];
-    document.getElementById('namafile').value = file_pref + file.name;
+    document.getElementById('namafile').value = bookfile_pref + file.name;
 
     fileid = file.name.split(".")[0];
     console.log(fileid); 
