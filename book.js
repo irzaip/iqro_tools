@@ -20,7 +20,7 @@ function preload() {
 }
 
 function setup() {
-        cvv = createCanvas(my_img.width / 2 ,my_img.height / 2);
+    cvv = createCanvas(my_img.width / 2 ,my_img.height / 2);
 }
 
 function draw() {
