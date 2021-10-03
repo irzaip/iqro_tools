@@ -2,27 +2,25 @@ let ax = 0;
 let bx = 0;
 let xw;
 let yh;
-let mimg;
-let cvv;
-let allbox = [[0,0,0,0]];
-let inputer;
-let json_file = [];
+let my_img;
+let allbox = [];
 let save_pref = './iqro1_data';
 let bookfile_pref = './iqro1_book/';
 let counter = '0000';
-let namafile;
-let fileid;
+let namafile = './iqro1_book/0001.jpg';
+let fileid = '0001';
 let ccc;
 let ctxx;
-let scount = 0;
+
 let div_status = document.getElementById('status');
 
+
 function preload() {
-    namafile = document.getElementById('namafile').value;
     my_img = loadImage(namafile); // Load the image
 }
+
 function setup() {
-    cvv = createCanvas(my_img.width / 2 ,my_img.height / 2);
+        cvv = createCanvas(my_img.width / 2 ,my_img.height / 2);
 }
 
 function draw() {
@@ -31,13 +29,12 @@ function draw() {
     stroke(255,0,0);
     strokeWeight(2);
     for (let i = 0; i < allbox.length; i++) {
-        line(allbox[i][0], allbox[i][1], allbox[i][0], allbox[i][3]);
-        line(allbox[i][0], allbox[i][1], allbox[i][2], allbox[i][1]);
-        line(allbox[i][2], allbox[i][3], allbox[i][2], allbox[i][1]);
-        line(allbox[i][2], allbox[i][3], allbox[i][0], allbox[i][3]);
+        line(allbox[i]["x"], allbox[i]["y"], allbox[i]["x"], allbox[i]["y1"]);
+        line(allbox[i]["x"], allbox[i]["y"], allbox[i]["x1"], allbox[i]["y"]);
+        line(allbox[i]["x1"], allbox[i]["y1"], allbox[i]["x1"], allbox[i]["y"]);
+        line(allbox[i]["x1"], allbox[i]["y1"], allbox[i]["x"], allbox[i]["y1"]);
     }
-}
-
+};
 
 function mousePressed() {
     if (ax == 0) {
@@ -46,46 +43,32 @@ function mousePressed() {
     } else {
         xw = parseInt(pmouseX);
         yh = parseInt(pmouseY);
-        allbox.push([ax,bx,xw,yh]);
+        let sfn = fileid + "_" + zeroPad(counter, 4) + ".jpg"; 
+        allbox.push(
+            {'x': ax
+            , 'y': bx
+            , 'x1': xw
+            , 'y1': yh
+            , 'file': sfn
+            , 'id': fileid + ".jpg" });
         ax = 0;
         bx = 0;
+        counter++
     }
-  }
-
-function keyPressed() {
-    if (keyCode === LEFT_ARROW) {
-    } else if (keyCode === RIGHT_ARROW) {
-                allbox.pop();
-            }
-    }
-
-function save_part(box,fn) {
-    ccc = document.getElementById('defaultCanvas0');
-    ctxx = ccc.getContext("2d");
-    let get_window = box;
-    cropped = ctxx.getImageData(get_window[0], get_window[1], get_window[2], get_window[3])
-    let canvas1 = document.getElementById("canvas1");
-    canvas1.width = get_window[2]-get_window[0];
-    canvas1.height = get_window[3]-get_window[1];
-    let ctx1 = canvas1.getContext("2d");
-    ctx1.rect(0, 0, 100, 100);
-    ctx1.fillStyle = 'white';
-    ctx1.fill();
-    ctx1.putImageData(cropped, 0, 0);
-    saveCanvas(canvas1, fn)
-    console.log("pasted!");
+    redraw();
 }
+
 
 function keyTyped() {
     if (key === 's') {
         saveJson();
     } else if (key === 'z') {
         allbox.pop();
+        counter--;
     } else if (key === 'v') {
-        savePic(scount);
+        savePic();
     } else if (key === 'd') {
-        buildjson();
-        status("JSON builded!");
+        saveJson();
     }
 }
 
@@ -93,51 +76,32 @@ function status(stts) {
   div_status.innerHTML = 'Status :' + stts;
 }
 
-function buildjson() {
-    let temp;
-    counter = 0;
-    allbox.shift();
-    console.log("Panjang:", allbox.length)
-    for (let i = 0; i < allbox.length; i++ ){
-      let m = allbox[0];
-      let sfn = fileid + "_" + zeroPad(counter, 4) + ".jpg"; 
-      temp = {
-          'x': m[0],
-          'y': m[1],
-          'x1' : m[2],
-          'y1' : m[3],
-          'file': sfn,
-          'id': fileid + ".jpg"
-      }
-      counter++;
-      json_file.push(temp);
-      console.log('nilai m:' + m);
-      //save_part(m,sfn);
-      scounter = 0;
-    }
-    fileJSON = JSON.stringify(json_file);
-}
-
-function saveJson() {
-    download(fileJSON, fileid + '_json.txt', 'text/plain');
+async function saveJson() {
+    fileJSON = JSON.stringify(allbox);
+    const file = await download(fileJSON, fileid + '_json.txt', 'text/plain');
     console.log("file json sudah di save");
     status("file JSON sudah di save");
 }
 
 
 function savePic() {
-    try {
-    let m = json_file[scount];
-    console.log("record:"+ scount);
-    console.log(m); 
-    scount++;
-    if(m){ console.log('saved')};
-        status("File Saved!");
-    } catch(e) {
-        console.log(e);
-        console.log("Sudah habis");
-        status("Error loh");
-    }    
+    console.log("Total record:"+ allbox.length);
+    allbox.forEach(async function(m) {
+    ccc = document.getElementById('defaultCanvas0');
+    ctxx = ccc.getContext("2d");
+    cropped = ctxx.getImageData(m["x"],m["y"],m["x1"],m["y1"])
+    let canvas1 = document.getElementById("canvas1");
+    let ctx1 = canvas1.getContext("2d");
+    canvas1.width = m["x1"]-m["x"];
+    canvas1.height = m["y1"]-m["y"];
+    ctx1.rect(0, 0, canvas1.width, canvas1.height);
+    ctx1.fillStyle = 'white';
+    ctx1.fill();
+    ctx1.putImageData(cropped, 0, 0);
+    const fl = await saveCanvas(canvas1, m["file"]);
+    console.log('saved');
+    status(m["file"] + " File Saved!");
+    });
 }
 
 function download(content, fileName, contentType) {
@@ -159,13 +123,18 @@ function openfile() {
  
     inputer.onchange = e => { 
     let file = e.target.files[0];
-    document.getElementById('namafile').value = bookfile_pref + file.name;
-
+    namafile = bookfile_pref + file.name;
     fileid = file.name.split(".")[0];
-    console.log(fileid); 
+    console.log("membuka halaman:"+fileid);
+    allbox = [];
     preload();
-    }
+    }    
     inputer.click();
-    allbox = [[0,0,0,0]];
 }
 
+async function loadjson() {
+    await fetch(save_pref + "/" + fileid + '_json.txt')
+          .then(response => response.json())
+          .then(json => allbox = json);
+    status(" Loaded " + allbox.length + " records");
+}
