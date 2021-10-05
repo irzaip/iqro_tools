@@ -69,6 +69,12 @@ function keyTyped() {
         savePic();
     } else if (key === 'd') {
         saveJson();
+        counter = '0000';
+    } else if (key === 'a') {
+        counter = '0000';
+        allbox = [];
+    } else if (key === 'q') {
+        status(allbox.shift()['file']);
     }
 }
 
@@ -84,9 +90,9 @@ async function saveJson() {
 }
 
 
-function savePic() {
+async function savePic() {
     console.log("Total record:"+ allbox.length);
-    allbox.forEach(async function(m) {
+    let fe = await allbox.forEach(async function(m) {
     ccc = document.getElementById('defaultCanvas0');
     ctxx = ccc.getContext("2d");
     cropped = ctxx.getImageData(m["x"],m["y"],m["x1"],m["y1"])
@@ -130,6 +136,7 @@ function openfile() {
     preload();
     }    
     inputer.click();
+    counter='0000';
 }
 
 async function loadjson() {
@@ -137,4 +144,5 @@ async function loadjson() {
           .then(response => response.json())
           .then(json => allbox = json);
     status(" Loaded " + allbox.length + " records");
+    counter = allbox.length;
 }
