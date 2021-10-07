@@ -1,0 +1,25 @@
+body {
+    display: inline;
+    background-color: white;
+  }
+  h1 {
+    color: blue;
+  }
+  p {
+    color: red;
+  }
+
+#tampilan {
+    height: 150px;
+}
+#instruksi {
+    font-size: large;
+}
+
+.media {
+    display: inline;
+    margin-top: 10px;
+    margin-right: -10px;
+    margin-left: -10px;
+    height: 70px;
+}
